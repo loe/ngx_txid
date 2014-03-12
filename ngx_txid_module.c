@@ -112,7 +112,13 @@ ngx_txid_get(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data
 
 static ngx_int_t
 ngx_txid_init_module(ngx_cycle_t *cycle) {
-    txid_dev_urandom = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+/*  -----------------------------------------------------
+    O_CLOEXEC supported since Linux 2.6.23
+    txid_dev_urandom = open("/dev/urandom", O_RDONLY | O_CLOEXEC); 
+*/
+    txid_dev_urandom = open("/dev/urandom", O_RDONLY);
+    fcntl(txid_dev_urandom, F_SETFD, FD_CLOEXEC);
+/* ---------------------------------------------------- */
     if (txid_dev_urandom == -1) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "could not open /dev/urandom device for \"$txid\"");
